@@ -1,14 +1,16 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { FiGrid, FiUsers, FiShield, FiBarChart2, FiSettings, FiLogOut } from 'react-icons/fi';
 
 const Sidebar = ({ handleLogout }) => {
+  const location = useLocation();
   const menuItems = [
-    { icon: <FiGrid />, name: 'Dashboard' },
-    { icon: <FiUsers />, name: 'User Management' },
-    { icon: <FiUsers />, name: 'Group Management' },
-    { icon: <FiShield />, name: 'Security & Logs' },
-    { icon: <FiBarChart2 />, name: 'System Status' },
-    { icon: <FiSettings />, name: 'Settings' },
+    { icon: <FiGrid />, name: 'Dashboard', path: '/' },
+    { icon: <FiUsers />, name: 'User Management', path: '/user-management' },
+    { icon: <FiUsers />, name: 'Group Management', path: '/group-management' },
+    { icon: <FiShield />, name: 'Security & Logs', path: '/security' },
+    { icon: <FiBarChart2 />, name: 'System Status', path: '/status' },
+    { icon: <FiSettings />, name: 'Settings', path: '/settings' },
   ];
 
   return (
@@ -17,15 +19,15 @@ const Sidebar = ({ handleLogout }) => {
         <ul>
           {menuItems.map((item, index) => (
             <li key={index} className="mb-2">
-              <a
-                href="#"
+              <Link
+                to={item.path}
                 className={`flex items-center p-3 rounded-lg text-gray-300 hover:bg-yellow-600 hover:text-white transition-colors duration-200 ${
-                  item.name === 'Dashboard' ? 'bg-gray-700 text-white' : ''
+                  location.pathname === item.path ? 'bg-gray-700 text-white' : ''
                 }`}
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 {item.name}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
