@@ -1,75 +1,94 @@
 import React, { useState, useEffect } from 'react';
-import { FiUsers, FiLayers, FiUserCheck, FiUserX, FiAlertCircle } from 'react-icons/fi';
-
-const StatCard = ({ icon, title, value, color }) => (
-  <div className={`bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-6 flex items-center`}>
-    <div className={`p-3 rounded-full mr-4 ${color}`}>
-      {icon}
-    </div>
-    <div>
-      <h3 className="text-gray-300 text-sm font-medium">{title}</h3>
-      <p className="text-white text-2xl font-bold">{value}</p>
-    </div>
-  </div>
-);
+import { FiUsers, FiShield, FiUserCheck, FiUserX, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import VerificationRequests from './VerificationRequests'; 
+import ActivityLog from './ActivityLog';
+import StatCard from './StatCard'; 
 
 const Dashboard = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalGroups: 0, verifiedUsers: 0, unverifiedUsers: 0 });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshNeeded, setRefreshNeeded] = useState(false);
+
+  const fetchDashboardData = async () => {
+    try {
+      const headers = { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` };
+      
+      const [usersResponse, groupsResponse] = await Promise.all([
+        fetch('http://localhost:8000/api/hq/all-users', { headers }),
+        fetch('http://localhost:8000/api/hq/all-groups', { headers }),
+      ]);
+
+      if (!usersResponse.ok) throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
+      if (!groupsResponse.ok) throw new Error(`Failed to fetch groups: ${groupsResponse.statusText}`);
+
+      const usersData = await usersResponse.json();
+      const groupsData = await groupsResponse.json();
+
+      const totalUsers = Array.isArray(usersData.users) ? usersData.users.length : 0;
+      const verifiedUsers = Array.isArray(usersData.users) ? usersData.users.filter(u => u.is_verified).length : 0;
+
+      setStats({
+        totalUsers,
+        totalGroups: Array.isArray(groupsData.groups) ? groupsData.groups.length : 0,
+        verifiedUsers,
+        unverifiedUsers: totalUsers - verifiedUsers,
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const headers = { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` };
-        
-        const [usersResponse, groupsResponse] = await Promise.all([
-          fetch('http://localhost:8000/api/hq/all-users', { headers }),
-          fetch('http://localhost:8000/api/hq/all-groups', { headers }),
-        ]);
-
-        if (!usersResponse.ok) throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
-        if (!groupsResponse.ok) throw new Error(`Failed to fetch groups: ${groupsResponse.statusText}`);
-
-        const usersData = await usersResponse.json();
-        const groupsData = await groupsResponse.json();
-
-        const totalUsers = Array.isArray(usersData.users) ? usersData.users.length : 0;
-        const verifiedUsers = Array.isArray(usersData.users) ? usersData.users.filter(u => u.is_verified).length : 0;
-
-        setStats({
-          totalUsers,
-          totalGroups: Array.isArray(groupsData.groups) ? groupsData.groups.length : 0,
-          verifiedUsers,
-          unverifiedUsers: totalUsers - verifiedUsers,
-        });
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    setLoading(true);
     fetchDashboardData();
-  }, []);
+    if(refreshNeeded) {
+      setRefreshNeeded(false);
+    }
+  }, [refreshNeeded]);
+
+  const handleUserAction = () => {
+    setRefreshNeeded(true);
+  };
 
   if (loading) {
-    return <div className="p-6 text-white">Loading dashboard...</div>;
+    return <div className="flex items-center justify-center h-full"><div className="text-white">Loading dashboard...</div></div>;
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6 text-white">HQ Dashboard</h2>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold text-white">HQ Command Dashboard</h1>
+      
       {error && 
-        <div className="flex items-center text-red-400 bg-red-900/50 p-3 rounded-lg mb-6">
-            <FiAlertCircle className="mr-2"/> {`Error: ${error}`}
+        <div className="flex items-center text-red-300 bg-red-900/40 p-4 rounded-lg shadow-md">
+            <FiAlertCircle className="mr-3 h-5 w-5"/> 
+            <div>
+              <h3 className="font-semibold">An Error Occurred</h3>
+              <p className="text-sm">{error}</p>
+            </div>
         </div>
       }
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={<FiUsers size={24} />} title="Total Users" value={stats.totalUsers} color="bg-blue-500/80" />
-        <StatCard icon={<FiLayers size={24} />} title="Total Groups" value={stats.totalGroups} color="bg-purple-500/80" />
-        <StatCard icon={<FiUserCheck size={24} />} title="Verified Users" value={stats.verifiedUsers} color="bg-green-500/80" />
-        <StatCard icon={<FiUserX size={24} />} title="Unverified Users" value={stats.unverifiedUsers} color="bg-yellow-500/80" />
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard icon={<FiUsers className="text-blue-400" />} title="Total Users" value={stats.totalUsers} />
+        <StatCard icon={<FiShield className="text-purple-400" />} title="Total Groups" value={stats.totalGroups} />
+        <StatCard icon={<FiUserCheck className="text-green-400" />} title="Verified Users" value={stats.verifiedUsers} />
+        <StatCard icon={<FiUserX className="text-yellow-400" />} title="Unverified Users" value={stats.unverifiedUsers} />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 bg-gray-800 rounded-2xl shadow-xl p-6">
+          <h2 className="text-xl font-semibold mb-4 text-white">Pending Verifications</h2>
+          <VerificationRequests onUserVerified={handleUserAction} />
+        </div>
+        <div className="bg-gray-800 rounded-2xl shadow-xl p-6">
+            <h2 className="text-xl font-semibold mb-4 text-white">Recent Activity</h2>
+            <ActivityLog />
+        </div>
       </div>
     </div>
   );

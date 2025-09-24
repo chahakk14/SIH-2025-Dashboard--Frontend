@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { FiEye, FiEyeOff, FiLoader } from 'react-icons/fi';
+import { FaUser, FaLock } from 'react-icons/fa';
 
 const Login = ({ onLogin }) => {
-    const [passwordVisible, setPasswordVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setLoading(true);
-        // Simulate a network request
-        setTimeout(() => {
+        if (username === 'admin' && password === 'password') {
             onLogin();
-            setLoading(false);
-        }, 1500);
+        } else {
+            setError('Invalid credentials. Please try again.');
+        }
     };
 
     return (
@@ -22,64 +22,64 @@ const Login = ({ onLogin }) => {
         >
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 bg-opacity-80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700">
                 <div className="text-center">
-                    <img src="src/images/logo.png" alt="Sainya Samvaad Logo" className="mx-auto h-19 w-16 mb-4" />
-                    <h1 className="text-3xl font-bold ">Sainya Samvaad</h1>
-                    <p className="mt-2 text-gray-400">HQ Command Center Login</p>
+                    <img src="src/images/logo.png" alt="Sainya Samvaad Logo" className="mx-auto h-24 w-24 mb-4" />
+                    <h1 className="text-4xl font-bold text-white">Sainya Samvaad</h1>
+                    <p className="mt-2 text-gray-300">HQ Command Center Login</p>
                 </div>
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="relative">
-                        <label htmlFor="username" className="block text-sm font-medium text-gray-300">
-                            Username / Service ID
-                        </label>
+                        <label htmlFor="username" className="sr-only">Username / Service ID</label>
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FaUser className="text-gray-400" />
+                        </div>
                         <input
                             id="username"
                             name="username"
                             type="text"
+                            autoComplete="username"
                             required
-                            className="w-full px-4 py-3 mt-2 text-white bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                            placeholder="Enter your username"
+                            className="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 sm:text-sm"
+                            placeholder="Username / Service ID"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                         />
                     </div>
+
                     <div className="relative">
-                        <label htmlFor="password"className="block text-sm font-medium text-gray-300">
-                            Password
-                        </label>
+                        <label htmlFor="password" className="sr-only">Password</label>
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FaLock className="text-gray-400" />
+                        </div>
                         <input
                             id="password"
                             name="password"
-                            type={passwordVisible ? "text" : "password"}
+                            type="password"
+                            autoComplete="current-password"
                             required
-                            className="w-full px-4 py-3 mt-2 text-white bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                            placeholder="Enter your password"
+                            className="block w-full pl-10 pr-3 py-3 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 sm:text-sm"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
                         />
-                         <button
-                            type="button"
-                            onClick={() => setPasswordVisible(!passwordVisible)}
-                            className="absolute inset-y-0 right-0 top-7 px-4 text-gray-400 hover:text-white"
-                        >
-                            {passwordVisible ? <FiEyeOff /> : <FiEye />}
-                        </button>
                     </div>
-                    <div className="flex items-center justify-end">
-                        
-                        <div className="text-sm">
-                            <a href="#" className="font-medium text-yellow-500 hover:text-yellow-400">
-                                Forgot password?
-                            </a>
+
+                    {error && (
+                        <div className="flex items-center justify-center text-sm text-red-400">
+                            <p>{error}</p>
                         </div>
-                    </div>
+                    )}
+
                     <div>
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="w-full px-4 py-3 font-bold text-gray-900 bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-yellow-500 transition-all duration-200 flex items-center justify-center"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500 transition duration-300 ease-in-out"
                         >
-                            {loading ? <FiLoader className="animate-spin h-5 w-5" /> : "Secure Login"}
+                            Sign in
                         </button>
                     </div>
                 </form>
-                 <p className="text-xs text-center text-gray-500">
-                    © 2025 Sainya Samvaad Initiative. All rights reserved.
+                <p className="mt-8 text-xs text-center text-gray-400">
+                    © 2024 Sainya Samvaad. All rights reserved.
                 </p>
             </div>
         </div>

@@ -1,45 +1,101 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiGrid, FiUsers, FiShield, FiBarChart2, FiSettings, FiLogOut } from 'react-icons/fi';
+import { FiGrid, FiUsers, FiShield, FiLogOut, FiBarChart2, FiSettings, FiX } from 'react-icons/fi';
 
-const Sidebar = ({ handleLogout }) => {
-  const location = useLocation();
-  const menuItems = [
-    { icon: <FiGrid />, name: 'Dashboard', path: '/' },
-    { icon: <FiUsers />, name: 'User Management', path: '/user-management' },
-    { icon: <FiUsers />, name: 'Group Management', path: '/group-management' },
-    { icon: <FiShield />, name: 'Security & Logs', path: '/security' },
-    { icon: <FiBarChart2 />, name: 'System Status', path: '/status' },
-    { icon: <FiSettings />, name: 'Settings', path: '/settings' },
-  ];
+const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
+    const location = useLocation();
+    const sidebar = useRef(null);
 
-  return (
-    <div className="w-64 bg-gray-800 flex flex-col fixed top-20 left-0 bottom-0">
-      <nav className="flex-1 px-4 py-4">
-        <ul>
-          {menuItems.map((item, index) => (
-            <li key={index} className="mb-2">
-              <Link
-                to={item.path}
-                className={`flex items-center p-3 rounded-lg text-gray-300 hover:bg-yellow-600 hover:text-white transition-colors duration-200 ${
-                  location.pathname === item.path ? 'bg-gray-700 text-white' : ''
-                }`}
-              >
-                <span className="mr-3 text-lg">{item.icon}</span>
-                {item.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <div className="p-4 border-t border-gray-700">
-        <a href="#" onClick={handleLogout} className="flex items-center p-3 rounded-lg text-gray-300 hover:bg-red-600 hover:text-white transition-colors duration-200">
-          <FiLogOut className="mr-3 text-lg" />
-          Logout
-        </a>
-      </div>
-    </div>
-  );
+    // close on click outside
+    useEffect(() => {
+        const clickHandler = ({ target }) => {
+            if (!sidebar.current || sidebar.current.contains(target)) return;
+            if (window.innerWidth < 1024) {
+                setSidebarOpen(false);
+            }
+        };
+        document.addEventListener('click', clickHandler);
+        return () => document.removeEventListener('click', clickHandler);
+    }, [sidebarOpen, setSidebarOpen]);
+
+    // close if the esc key is pressed
+    useEffect(() => {
+        const keyHandler = ({ keyCode }) => {
+            if (!sidebarOpen || keyCode !== 27) return;
+            setSidebarOpen(false);
+        };
+        document.addEventListener('keydown', keyHandler);
+        return () => document.removeEventListener('keydown', keyHandler);
+    }, [sidebarOpen, setSidebarOpen]);
+
+    const menuItems = [
+        { icon: <FiGrid />, name: 'Dashboard', path: '/home' },
+        { icon: <FiUsers />, name: 'User Management', path: '/home/user-management' },
+        { icon: <FiUsers />, name: 'Group Management', path: '/home/group-management' },
+        { icon: <FiShield />, name: 'Security & Logs', path: '/home/security' },
+        { icon: <FiBarChart2 />, name: 'System Status', path: '/home/status' },
+        { icon: <FiSettings />, name: 'Settings', path: '/home/settings' },
+    ];
+
+    return (
+        <aside
+            ref={sidebar}
+            className={`absolute left-0 top-0 z-40 flex h-screen w-72 flex-col overflow-y-hidden bg-gray-800 duration-300 ease-linear lg:static lg:translate-x-0 ${
+                sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+        >
+            {/* <!-- SIDEBAR HEADER --> */}
+            <div className="flex items-center justify-between gap-2 px-6 py-5 lg:py-6">
+                <Link to="/home" className="flex items-center space-x-3">
+                    <img src="/src/images/logo.png" alt="Sainya Samvaad Logo" className="h-10 w-auto" />
+                    <span className="text-xl font-semibold text-white">Sainya Samvaad</span>
+                </Link>
+
+                <button
+                    className="block lg:hidden text-gray-400 hover:text-white"
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                >
+                    <FiX className="w-6 h-6" />
+                </button>
+            </div>
+
+            {/* <!-- SIDEBAR MENU --> */}
+            <div className="flex flex-col overflow-y-auto duration-300 ease-linear">
+                <nav className="mt-5 py-4 px-4 lg:px-6">
+                    <div>
+                        <h3 className="mb-4 ml-4 text-xs font-semibold text-gray-400 uppercase">MENU</h3>
+                        <ul className="mb-6 flex flex-col gap-1.5">
+                            {menuItems.map((item, index) => (
+                                <li key={index}>
+                                    <Link
+                                        to={item.path}
+                                        onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
+                                        className={`group relative flex items-center gap-3 rounded-md py-2 px-4 font-medium text-gray-300 duration-200 ease-in-out hover:bg-blue-600 hover:text-white ${
+                                            location.pathname.startsWith(item.path) && (item.path !== '/home' || location.pathname === '/home') && 'bg-blue-700 text-white'
+                                        }`}
+                                    >
+                                        {item.icon}
+                                        {item.name}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+
+            {/* <!-- SIDEBAR FOOTER --> */}
+            <div className="mt-auto p-4 border-t border-gray-700">
+                <button 
+                    onClick={handleLogout} 
+                    className="flex w-full items-center gap-3 rounded-md py-2 px-4 font-medium text-gray-300 duration-200 ease-in-out hover:bg-red-600 hover:text-white"
+                >
+                    <FiLogOut />
+                    Logout
+                </button>
+            </div>
+        </aside>
+    );
 };
 
 export default Sidebar;

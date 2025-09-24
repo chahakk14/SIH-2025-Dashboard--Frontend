@@ -1,36 +1,110 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { FiCheckCircle, FiXCircle, FiAlertCircle } from 'react-icons/fi';
 
-const VerificationRequestItem = ({ user, id, group, requester }) => (
-  <div className="bg-gray-700 p-4 rounded-lg">
-    <p><strong>User:</strong> {user} (Veteran ID: {id})</p>
-    <p className="text-gray-400 text-sm mt-1"><strong>Group:</strong> {group}</p>
-    <p className="text-gray-400 text-sm"><strong>Requester:</strong> {requester}</p>
-    <div className="flex space-x-2 mt-3">
-      <button className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded text-sm">Approve</button>
-      <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">Reject</button>
-      {/* <button className="flex-1 bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-3 rounded text-sm">View Details</button> */}
-    </div>
-  </div>
-);
+const VerificationRequests = ({ onUserVerified }) => {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const VerificationRequests = () => {
+  const fetchUnverifiedUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/hq/unverified-users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (Array.isArray(data.unverified_users)) {
+        setRequests(data.unverified_users);
+      } else {
+        setRequests([]);
+        console.error("API response for unverified users is not an array:", data);
+      }
+    } catch (error) {
+      setError(error.message);
+      console.error("Failed to fetch unverified users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUnverifiedUsers();
+  }, []);
+
+  const handleVerification = async (userId, approve) => {
+    if (approve) {
+        try {
+            const response = await fetch(`http://localhost:8000/api/hq/set-verified/${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+                },
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to verify user');
+            }
+            fetchUnverifiedUsers(); 
+            if(onUserVerified) onUserVerified();
+        } catch (error) {
+            alert(`Verification failed: ${error.message}`);
+        }
+    } else {
+        // TODO: Implement rejection logic (e.g., delete user or mark as rejected)
+        alert('Rejection functionality not yet implemented.');
+    }
+  };
+  
+  if (loading) {
+    return <div className="text-center py-4 text-gray-400">Loading requests...</div>;
+  }
+
+  if (error) {
+    return (
+        <div className="flex items-center text-red-300 bg-red-900/30 p-3 rounded-lg">
+            <FiAlertCircle className="mr-2"/> {`Error: ${error}`}
+        </div>
+    );
+  }
+
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-6">Pending Verification Requests</h2>
-      <div className="space-y-4">
-        <VerificationRequestItem 
-          user="Ramesh Kumar"
-          id="7890"
-          group="12th Rajuat Families"
-          requester="Cpt. Singh"
-        />
-         <VerificationRequestItem 
-          user="Ramesh Kumar"
-          id="7890"
-          group="12th Rajuat Families"
-          requester="Cpt. Singh"
-        />
-      </div>
+    <div>
+        {requests.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">No pending verification requests.</p>
+        ) : (
+            <ul className="space-y-3">
+            {requests.map((user, index) => (
+                <li key={user._id || index} className="bg-gray-700/50 p-3 rounded-lg flex items-center justify-between transition duration-200 hover:bg-gray-700">
+                    <div>
+                        <p className="font-semibold text-white">{user.username}</p>
+                        <p className="text-sm text-gray-400">{user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={() => handleVerification(user._id, true)}
+                            className="flex items-center gap-1.5 text-green-400 hover:text-green-300 transition-colors duration-200 p-2 rounded-md hover:bg-green-800/50"
+                        >
+                            <FiCheckCircle size={18} />
+                            <span className="text-sm font-medium">Approve</span>
+                        </button>
+                        <button 
+                            onClick={() => handleVerification(user._id, false)}
+                            className="flex items-center gap-1.5 text-red-500 hover:text-red-400 transition-colors duration-200 p-2 rounded-md hover:bg-red-800/50"
+                        >
+                            <FiXCircle size={18} />
+                             <span className="text-sm font-medium">Decline</span>
+                        </button>
+                    </div>
+                </li>
+            ))}
+            </ul>
+        )}
     </div>
   );
 };

@@ -1,18 +1,20 @@
-import { Routes, Route } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Dashboard from "../components/Dashboard";
-import Header from "../components/Header";
-import UserManagement from "../components/UserManagement";
-import GroupManagement from "../components/GroupManagement";
+import { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
+import Dashboard from '../components/Dashboard';
+import Header from '../components/Header';
+import UserManagement from '../components/UserManagement';
+import GroupManagement from '../components/GroupManagement';
 
 const Home = ({ handleLogout }) => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-900 text-white font-sans">
-            <Header />
-            <div className="flex pt-20">
-                <Sidebar handleLogout={handleLogout} />
-                <main className="flex-1 p-6 ml-64">
+        <div className="flex h-screen bg-gray-900 text-white font-sans">
+            <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} handleLogout={handleLogout} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-6">
                     <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/user-management" element={<UserManagement />} />
@@ -22,6 +24,6 @@ const Home = ({ handleLogout }) => {
             </div>
         </div>
     );
-}
+};
 
 export default Home;
