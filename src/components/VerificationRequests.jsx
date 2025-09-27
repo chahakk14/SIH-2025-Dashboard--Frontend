@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiCheckCircle, FiXCircle, FiAlertCircle } from 'react-icons/fi';
+import { toast } from 'sonner';
+import { API_BASE_URL } from '../config/api';
 
 const VerificationRequests = ({ onUserVerified }) => {
   const [requests, setRequests] = useState([]);
@@ -9,7 +11,7 @@ const VerificationRequests = ({ onUserVerified }) => {
   const fetchUnverifiedUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/hq/unverified-users', {
+      const response = await fetch(`${API_BASE_URL}/api/hq/unverified-users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -26,6 +28,9 @@ const VerificationRequests = ({ onUserVerified }) => {
       }
     } catch (error) {
       setError(error.message);
+      toast.error('Failed to fetch unverified users', {
+        description: error.message,
+      });
       console.error("Failed to fetch unverified users:", error);
     } finally {
       setLoading(false);
@@ -39,7 +44,7 @@ const VerificationRequests = ({ onUserVerified }) => {
   const handleVerification = async (userId, approve) => {
     if (approve) {
         try {
-            const response = await fetch(`http://localhost:8000/api/hq/set-verified/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/hq/set-verified/${userId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
@@ -52,12 +57,18 @@ const VerificationRequests = ({ onUserVerified }) => {
             }
             fetchUnverifiedUsers(); 
             if(onUserVerified) onUserVerified();
+            toast.success('User verified successfully!', {
+              description: 'The user has been verified and can now access the system',
+            });
         } catch (error) {
-            alert(`Verification failed: ${error.message}`);
+            toast.error('Verification failed', {
+              description: error.message,
+            });
         }
     } else {
-        // TODO: Implement rejection logic (e.g., delete user or mark as rejected)
-        alert('Rejection functionality not yet implemented.');
+        toast.info('Feature coming soon!', {
+          description: 'User rejection functionality will be available in the next update',
+        });
     }
   };
   

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import Login from './page/Login';
 import Home from './page/Home';
 
@@ -46,6 +47,20 @@ function App() {
           element={isAuthenticated ? <Home handleLogout={handleLogout} /> : <Navigate to="/login" />}
         />
       </Routes>
+      <Toaster 
+        position="top-right"
+        expand={true}
+        richColors
+        closeButton
+        toastOptions={{
+          style: {
+            background: 'rgba(17, 24, 39, 0.9)',
+            border: '1px solid rgba(75, 85, 99, 0.5)', 
+            color: 'white',
+            backdropFilter: 'blur(10px)',
+          },
+        }}
+      />
     </Router>
   );
 }
