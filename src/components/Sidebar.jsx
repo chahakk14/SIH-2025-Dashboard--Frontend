@@ -1,6 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiGrid, FiUsers, FiShield, FiLogOut, FiBarChart2, FiSettings, FiX } from 'react-icons/fi';
+import { 
+    FiGrid, 
+    FiUsers, 
+    FiLogOut, 
+    FiX, 
+    FiActivity
+} from 'react-icons/fi';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
     const location = useLocation();
@@ -29,12 +35,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
     }, [sidebarOpen, setSidebarOpen]);
 
     const menuItems = [
-        { icon: <FiGrid />, name: 'Dashboard', path: '/home' },
-        { icon: <FiUsers />, name: 'User Management', path: '/home/user-management' },
-        { icon: <FiUsers />, name: 'Group Management', path: '/home/group-management' },
-        { icon: <FiShield />, name: 'Security & Logs', path: '/home/security' },
-        { icon: <FiBarChart2 />, name: 'System Status', path: '/home/status' },
-        { icon: <FiSettings />, name: 'Settings', path: '/home/settings' },
+        { icon: <FiGrid />, name: 'Dashboard', path: '/' },
+        { icon: <FiUsers />, name: 'User Management', path: '/user-management' },
+        { icon: <FiUsers />, name: 'Group Management', path: '/group-management' },
+        { icon: <FiActivity />, name: 'Security Logs', path: '/security/logs' },
+        // { icon: <FiBarChart2 />, name: 'System Status', path: '/status' },
+        // { icon: <FiSettings />, name: 'Settings', path: '/settings' },
     ];
 
     return (
@@ -46,9 +52,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
         >
             {/* <!-- SIDEBAR HEADER --> */}
             <div className="flex items-center justify-between gap-2 px-6 py-5 lg:py-6">
-                <Link to="/home" className="flex items-center space-x-3">
-                    <img src="/src/images/logo.png" alt="Sainya Samvaad Logo" className="h-10 w-auto" />
-                    <span className="text-xl font-semibold text-white">Sainya Samvaad</span>
+                <Link to="/" className="flex items-center space-x-3">
+                    <img src="src/images/logo.png" alt="Sainya Samvaad Logo" className="h-10 w-auto" />
+                    <span className="text-xl font-semibold text-white">Suraksha Varta</span>
                 </Link>
 
                 <button
@@ -71,7 +77,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
                                         to={item.path}
                                         onClick={() => window.innerWidth < 1024 && setSidebarOpen(false)}
                                         className={`group relative flex items-center gap-3 rounded-md py-2 px-4 font-medium text-gray-300 duration-200 ease-in-out hover:bg-blue-600 hover:text-white ${
-                                            location.pathname.startsWith(item.path) && (item.path !== '/home' || location.pathname === '/home') && 'bg-blue-700 text-white'
+                                            (location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path))) && 'bg-blue-700 text-white'
                                         }`}
                                     >
                                         {item.icon}

@@ -9,7 +9,6 @@ const ActivityLog = () => {
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-6">Recent Activity & Audit Log</h2>
       <div className="space-y-4">
         {logs.map((log, index) => (
           <div key={index} className="text-sm text-gray-300 font-mono">

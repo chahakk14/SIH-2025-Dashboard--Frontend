@@ -5,6 +5,7 @@ import Dashboard from '../components/Dashboard';
 import Header from '../components/Header';
 import UserManagement from '../components/UserManagement';
 import GroupManagement from '../components/GroupManagement';
+import SecurityLogs from '../components/SecurityLogs';
 
 const Home = ({ handleLogout }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,6 +20,7 @@ const Home = ({ handleLogout }) => {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/user-management" element={<UserManagement />} />
                         <Route path="/group-management" element={<GroupManagement />} />
+                        <Route path="/security/logs" element={<SecurityLogs />} />
                     </Routes>
                 </main>
             </div>
