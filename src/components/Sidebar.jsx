@@ -4,8 +4,6 @@ import {
     FiGrid, 
     FiUsers, 
     FiLogOut, 
-    FiBarChart2, 
-    FiSettings, 
     FiX, 
     FiActivity
 } from 'react-icons/fi';
@@ -56,7 +54,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, handleLogout }) => {
             <div className="flex items-center justify-between gap-2 px-6 py-5 lg:py-6">
                 <Link to="/" className="flex items-center space-x-3">
                     <img src="src/images/logo.png" alt="Sainya Samvaad Logo" className="h-10 w-auto" />
-                    <span className="text-xl font-semibold text-white">Sainya Samvaad</span>
+                    <span className="text-xl font-semibold text-white">Suraksha Varta</span>
                 </Link>
 
                 <button
