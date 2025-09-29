@@ -389,7 +389,6 @@ const GroupManagement = () => {
                     </React.Fragment>
                   );
                 })}
-              </tbody>
             </table>
           </div>
         )}
