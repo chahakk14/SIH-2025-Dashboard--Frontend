@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiCheckCircle, FiTrash2, FiAlertCircle, FiSearch, FiChevronDown, FiPlus } from 'react-icons/fi';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config/api';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -12,7 +13,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_ENDPOINT}/api/hq/all-users`, {
+      const response = await fetch(`${API_BASE_URL}/api/hq/all-users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
         },
@@ -38,7 +39,7 @@ const UserManagement = () => {
 
   const handleVerifyUser = async (userId) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_ENDPOINT}/api/hq/set-verified/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/hq/set-verified/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,

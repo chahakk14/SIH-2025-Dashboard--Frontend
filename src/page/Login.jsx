@@ -22,8 +22,8 @@ const Login = ({ onLogin }) => {
         >
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 bg-opacity-80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700">
                 <div className="text-center">
-                    <img src="src/images/logo.png" alt="Sainya Samvaad Logo" className="mx-auto h-24 w-24 mb-4" />
-                    <h1 className="text-4xl font-bold text-white">Sainya Samvaad</h1>
+                    <img src="src/images/logo.png" alt="Suraksha Vaarta Logo" className="mx-auto h-28 w-24 mb-4" />
+                    <h1 className="text-4xl font-bold text-white">Suraksha Vaarta</h1>
                     <p className="mt-2 text-gray-300">HQ Command Center Login</p>
                 </div>
                 <form className="space-y-6" onSubmit={handleSubmit}>
@@ -79,7 +79,7 @@ const Login = ({ onLogin }) => {
                     </div>
                 </form>
                 <p className="mt-8 text-xs text-center text-gray-400">
-                    © 2024 Sainya Samvaad. All rights reserved.
+                    © 2025 Suraksha Vaarta. All rights reserved.
                 </p>
             </div>
         </div>

@@ -3,6 +3,7 @@ import { FiUsers, FiShield, FiUserCheck, FiUserX, FiAlertCircle } from 'react-ic
 import VerificationRequests from './VerificationRequests'; 
 import ActivityLog from './ActivityLog';
 import StatCard from './StatCard'; 
+import { API_BASE_URL } from '../config/api';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalGroups: 0, verifiedUsers: 0, unverifiedUsers: 0 });
@@ -15,8 +16,8 @@ const Dashboard = () => {
       const headers = { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` };
       
       const [usersResponse, groupsResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_ENDPOINT}/api/hq/all-users`, { headers }),
-        fetch(`${import.meta.env.VITE_API_ENDPOINT}/api/hq/all-groups`, { headers }),
+        fetch(`${API_BASE_URL}/api/hq/all-users`, { headers }),
+        fetch(`${API_BASE_URL}/api/hq/all-groups`, { headers }),
       ]);
 
       if (!usersResponse.ok) throw new Error(`Failed to fetch users: ${usersResponse.statusText}`);
