@@ -66,7 +66,10 @@ const SecurityLogs = () => {
   };
 
   const formatTimestamp = (timestamp) => {
-    return new Date(timestamp).toLocaleString('en-US', {
+    const date = new Date(timestamp);
+    const istDate = new Date(date.getTime() + (5.5 * 60 * 60 * 1000)); // UTC+5:30 in milliseconds
+
+    return istDate.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

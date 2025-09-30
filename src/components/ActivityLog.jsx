@@ -35,7 +35,11 @@ const ActivityLog = () => {
   };
 
   const formatTimestamp = (timestamp) => {
-    return new Date(timestamp).toLocaleString('en-US', {
+    // Convert UTC to UTC+05:30 (IST)
+    const date = new Date(timestamp);
+    // Add 5 hours 30 minutes in milliseconds
+    const istDate = new Date(date.getTime() + (5 * 60 * 60 * 1000) + (30 * 60 * 1000));
+    return istDate.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
