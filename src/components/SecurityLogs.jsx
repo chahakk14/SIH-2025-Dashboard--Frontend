@@ -16,7 +16,7 @@ const SecurityLogs = () => {
         headers: { "content-type": 'application/json' }
       });
       const data = await response.json();
-      setLogs(Array.isArray(data.logs) ? data.logs : []);
+      setLogs(Array.isArray(data.logs) ? data.logs.reverse() : []);
       setError(null);
     } catch (error) {
       setError(error.message);

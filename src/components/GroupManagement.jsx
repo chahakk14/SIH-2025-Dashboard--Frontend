@@ -16,6 +16,8 @@ const GroupManagement = () => {
   const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false);
   const [deleteMemberGroupId, setDeleteMemberGroupId] = useState(null);
   const [deleteMemberId, setDeleteMemberId] = useState(null);
+  const [showDeleteGroupModal, setShowDeleteGroupModal] = useState(false);
+  const [deleteGroupIndex, setDeleteGroupIndex] = useState(null);
 
   const fetchGroups = async () => {
     try {
@@ -107,18 +109,40 @@ const GroupManagement = () => {
     }
   };
 
-  const handleEditGroup = (index) => {
-    toast.info('Feature coming soon!', {
-      description: 'Group editing functionality will be available in the next update',
-    });
-  };
 
   const handleDeleteGroup = (index) => {
-    if (window.confirm(`Are you sure you want to delete Group ${index + 1}?`)) {
-      toast.info('Feature coming soon!', {
-        description: 'Group deletion functionality will be available in the next update',
+    setDeleteGroupIndex(index);
+    setShowDeleteGroupModal(true);
+  };
+
+  const handleDeleteGroupConfirm = async () => {
+    const groupId = groups[deleteGroupIndex]._id;
+    setShowDeleteGroupModal(false);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hq/delete-group/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      toast.success('Group deleted successfully!');
+      fetchGroups();
+    } catch (error) {
+      setError(error.message);
+      toast.error('Failed to delete group', {
+        description: error.message,
+      });
+      console.error("Failed to delete group:", error);
     }
+    setDeleteGroupIndex(null);
+  };
+
+  const handleDeleteGroupCancel = () => {
+    setShowDeleteGroupModal(false);
+    setDeleteGroupIndex(null);
   };
 
   const toggleGroupExpansion = (groupId) => {
@@ -229,6 +253,31 @@ const GroupManagement = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 relative">
+      /* Delete Group Confirmation Modal */
+      {showDeleteGroupModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
+          <div className="relative bg-gray-800 rounded-xl shadow-2xl p-8 min-w-[320px] flex flex-col items-center z-10">
+            <span className="text-white text-lg mb-4">
+              Are you sure you want to delete Group "{groups[deleteGroupIndex]?.name}"?
+            </span>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                onClick={handleDeleteGroupConfirm}
+              >
+                Yes
+              </button>
+              <button
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                onClick={handleDeleteGroupCancel}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Delete Member Confirmation Modal */}
       {showDeleteMemberModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

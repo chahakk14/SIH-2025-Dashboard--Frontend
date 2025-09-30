@@ -16,7 +16,7 @@ const ActivityLog = () => {
       });
       const data = await response.json();
       // Get only the latest 10 logs for activity display
-      const recentLogs = Array.isArray(data.logs) ? data.logs.slice(0, 4) : [];
+      const recentLogs = Array.isArray(data.logs) ? data.logs.reverse().slice(0, 4) : [];
       setLogs(recentLogs);
       setError(null);
     } catch (error) {
