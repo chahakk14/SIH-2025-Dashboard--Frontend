@@ -9,6 +9,8 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteUserId, setDeleteUserId] = useState(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -60,13 +62,40 @@ const UserManagement = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      toast.info('Feature not available', {
-        description: 'User deletion is not yet supported by the backend API',
+  const handleDeleteUser = (userId) => {
+    setDeleteUserId(userId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setShowDeleteModal(false);
+    if (!deleteUserId) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hq/delete-user/${deleteUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
       });
-      // Future implementation for user deletion
+      if (!response.ok) {
+        throw new Error((await response.json()).detail || 'Failed to delete user');
+      }
+      toast.success('User deleted successfully!', {
+        description: 'The user has been removed from the system',
+      });
+      fetchUsers(); // Refresh user list
+    } catch (error) {
+      toast.error('Deletion failed', {
+        description: error.message,
+      });
+    } finally {
+      setDeleteUserId(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setDeleteUserId(null);
   };
 
   const filteredUsers = users.filter(user => {
@@ -116,7 +145,33 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Blurred background */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
+          {/* Modal */}
+          <div className="relative bg-gray-800 rounded-xl shadow-2xl p-8 min-w-[320px] flex flex-col items-center z-10">
+            <span className="text-white text-lg mb-4">Are you sure you want to delete this user?</span>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                onClick={handleDeleteConfirm}
+              >
+                Yes
+              </button>
+              <button
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                onClick={handleDeleteCancel}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h1 className="text-3xl font-bold text-white">User Management</h1>
       
       {error && 

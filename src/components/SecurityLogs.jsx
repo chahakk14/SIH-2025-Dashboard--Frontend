@@ -1,196 +1,76 @@
 import React, { useState, useEffect } from 'react';
 import { FiDownload, FiAlertTriangle, FiCheckCircle, FiInfo, FiCalendar, FiX } from 'react-icons/fi';
 import { toast } from 'sonner';
+import { API_BASE_URL } from '../config/api';
 
 const SecurityLogs = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all'); // all, warnings, errors, info
-  const [dateRange, setDateRange] = useState('today'); // today, week, month, custom
+  const [filter, setFilter] = useState('all');
+  const [dateRange, setDateRange] = useState('today');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
 
-  // Sample log data (replace with API fetch)
-  const sampleLogs = [
-    { 
-      id: 1, 
-      timestamp: '2025-09-26 09:45:10', 
-      level: 'error', 
-      source: 'auth',
-      message: "Failed login attempt for user 'alpha_ops' from IP 192.168.1.105",
-      details: "Multiple failed attempts detected. Account temporarily locked.",
-      user: "System"
-    },
-    { 
-      id: 2, 
-      timestamp: '2025-09-26 09:43:15', 
-      level: 'warning', 
-      source: 'security',
-      message: "Screenshot attempt detected from user 'charlie_team'",
-      details: "User attempted to capture sensitive information",
-      user: "charlie_team"
-    },
-    { 
-      id: 3, 
-      timestamp: '2025-09-26 09:40:22', 
-      level: 'info', 
-      source: 'admin',
-      message: "New group 'Ops_Control_Room' created",
-      details: "Group created with 3 initial members",
-      user: "Lt. Anand Sharma"
-    },
-    { 
-      id: 4, 
-      timestamp: '2025-09-26 08:32:10', 
-      level: 'info', 
-      source: 'system',
-      message: "System backup completed successfully",
-      details: "Full backup completed in 3m 42s",
-      user: "System"
-    },
-    { 
-      id: 5, 
-      timestamp: '2025-09-25 17:22:01', 
-      level: 'warning', 
-      source: 'network',
-      message: "High network traffic detected",
-      details: "Traffic spike of 2.3GB/s for 45 seconds",
-      user: "System"
-    },
-    { 
-      id: 6, 
-      timestamp: '2025-09-25 16:05:33', 
-      level: 'info', 
-      source: 'user',
-      message: "User 'maj_singh' password changed",
-      details: "Password changed using account recovery",
-      user: "maj_singh"
-    },
-    { 
-      id: 7, 
-      timestamp: '2025-09-25 15:12:40', 
-      level: 'error', 
-      source: 'database',
-      message: "Database connection failure",
-      details: "Connection to primary database lost for 12 seconds",
-      user: "System"
-    },
-    { 
-      id: 8, 
-      timestamp: '2025-09-25 14:01:22', 
-      level: 'info', 
-      source: 'messages',
-      message: "Bulk message sent to 'Field_Ops' group",
-      details: "Priority message sent to 42 recipients",
-      user: "Command_HQ"
-    },
-    { 
-      id: 9, 
-      timestamp: '2025-09-25 12:45:08', 
-      level: 'warning', 
-      source: 'api',
-      message: "Rate limit exceeded for map data API",
-      details: "Too many requests in 5-minute window",
-      user: "tactical_view_1"
-    },
-    { 
-      id: 10, 
-      timestamp: '2025-09-25 10:33:59', 
-      level: 'info', 
-      source: 'auth',
-      message: "New admin user 'col_patel' created",
-      details: "Full system access granted",
-      user: "System Admin"
-    },
-    { 
-      id: 11, 
-      timestamp: '2025-09-24 23:15:44', 
-      level: 'error', 
-      source: 'security',
-      message: "Unauthorized access attempt to restricted documents",
-      details: "Access blocked, security alert generated",
-      user: "bravo_team_member"
-    },
-    { 
-      id: 12, 
-      timestamp: '2025-09-24 18:20:37', 
-      level: 'info', 
-      source: 'system',
-      message: "System updates applied successfully",
-      details: "17 security patches applied",
-      user: "System"
-    }
-  ];
-
-  // Fetch logs from API
-  useEffect(() => {
+  const fetchLogs = async () => {
     setLoading(true);
     try {
-      // Using sample data for demo
-      setTimeout(() => {
-        setLogs(sampleLogs);
-        setLoading(false);
-      }, 800);
+      const response = await fetch(`${API_BASE_URL}/api/logs/all-logs`, {
+        method: 'GET',
+        headers: { "content-type": 'application/json' }
+      });
+      const data = await response.json();
+      setLogs(Array.isArray(data.logs) ? data.logs : []);
+      setError(null);
     } catch (error) {
       setError(error.message);
-      setLoading(false);
-      toast.error('Failed to fetch security logs', {
-        description: error.message,
-      });
+      toast.error('Failed to fetch security logs', { description: error.message });
     }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLogs();
+    const intervalId = setInterval(fetchLogs, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
-  // Apply filters
   const filteredLogs = logs.filter(log => {
-    // Filter by log level
-    if (filter !== 'all' && log.level !== filter) return false;
-    
-    // Filter by date
+    if (filter !== 'all') return false;
     const logDate = new Date(log.timestamp);
     const today = new Date();
-    
-    if (dateRange === 'today') {
-      if (logDate.toDateString() !== today.toDateString()) return false;
-    } else if (dateRange === 'week') {
+    if (dateRange === 'today' && logDate.toDateString() !== today.toDateString()) return false;
+    if (dateRange === 'week') {
       const weekAgo = new Date();
       weekAgo.setDate(today.getDate() - 7);
       if (logDate < weekAgo) return false;
-    } else if (dateRange === 'month') {
+    }
+    if (dateRange === 'month') {
       const monthAgo = new Date();
       monthAgo.setMonth(today.getMonth() - 1);
       if (logDate < monthAgo) return false;
-    } else if (dateRange === 'custom') {
+    }
+    if (dateRange === 'custom') {
       const startDate = customStartDate ? new Date(customStartDate) : null;
       const endDate = customEndDate ? new Date(customEndDate) : null;
-      
       if (startDate && logDate < startDate) return false;
       if (endDate) {
-        // Set end date to end of day
         endDate.setHours(23, 59, 59);
         if (logDate > endDate) return false;
       }
     }
-    
     return true;
   });
 
-  // Export logs as CSV
   const exportLogsAsCSV = () => {
-    const headers = ['Timestamp', 'Level', 'Source', 'Message', 'Details', 'User'];
+    const headers = ['Timestamp', 'Username', 'Action', 'Target'];
     const csvData = [
       headers.join(','),
-      ...filteredLogs.map(log => [
-        log.timestamp,
-        log.level,
-        log.source,
-        `"${log.message.replace(/"/g, '""')}"`,
-        `"${log.details.replace(/"/g, '""')}"`,
-        log.user
-      ].join(','))
+      ...filteredLogs.map(({ timestamp, username, action, target }) =>
+        [timestamp, username, action, `"${(target || '').replace(/"/g, '""')}"`].join(',')
+      )
     ].join('\n');
-    
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -200,44 +80,13 @@ const SecurityLogs = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    toast.success('Logs exported successfully', {
-      description: 'Security logs have been exported as CSV',
-    });
-  };
-
-  // Get the appropriate icon for log level
-  const getLevelIcon = (level) => {
-    switch (level) {
-      case 'error':
-        return <FiAlertTriangle className="text-red-500" />;
-      case 'warning':
-        return <FiAlertTriangle className="text-yellow-500" />;
-      case 'info':
-        return <FiInfo className="text-blue-500" />;
-      default:
-        return <FiInfo className="text-gray-500" />;
-    }
-  };
-
-  // Get the appropriate style for log level
-  const getLevelStyle = (level) => {
-    switch (level) {
-      case 'error':
-        return 'bg-red-900/20 text-red-400 border-red-800/50';
-      case 'warning':
-        return 'bg-yellow-900/20 text-yellow-400 border-yellow-800/50';
-      case 'info':
-        return 'bg-blue-900/20 text-blue-400 border-blue-800/50';
-      default:
-        return 'bg-gray-800/50 text-gray-400 border-gray-700/50';
-    }
+    toast.success('Logs exported successfully', { description: 'Security logs have been exported as CSV' });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
       {/* Header Section */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-3xl font-bold text-white mb-2">Security Logs</h2>
@@ -253,9 +102,9 @@ const SecurityLogs = () => {
       </div>
 
       {/* Filters and Controls */}
-      <div className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-gray-700">
+      <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex flex-wrap gap-3">
+          {/* <div className="flex flex-wrap gap-3">
             <button 
               onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
@@ -299,7 +148,7 @@ const SecurityLogs = () => {
               <FiAlertTriangle size={16} />
               Errors
             </button>
-          </div>
+          </div> */}
           
           <div className="flex items-center gap-3">
             <button 
@@ -348,35 +197,25 @@ const SecurityLogs = () => {
               <thead>
                 <tr className="bg-gradient-to-r from-gray-800/30 to-gray-700/30">
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Level</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Source</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Message</th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">User</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Username</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Action</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-300 uppercase tracking-wider">Target</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-700/30 transition-all duration-200">
+                {filteredLogs.map(({ _id, timestamp, username, action, target }) => (
+                  <tr key={_id} className="hover:bg-gray-700/30 transition-all duration-200">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300 font-mono">
-                      {log.timestamp}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getLevelStyle(log.level)}`}>
-                        {getLevelIcon(log.level)}
-                        <span className="ml-1.5 capitalize">{log.level}</span>
-                      </span>
+                      {new Date(timestamp).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {log.source}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      <div>
-                        <div className="font-medium">{log.message}</div>
-                        <div className="text-gray-400 text-xs mt-1">{log.details}</div>
-                      </div>
+                      {username}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {log.user}
+                      {action}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                      {target || '-'}
                     </td>
                   </tr>
                 ))}

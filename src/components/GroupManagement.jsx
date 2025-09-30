@@ -13,6 +13,9 @@ const GroupManagement = () => {
   const [verifiedUsers, setVerifiedUsers] = useState([]);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   const [availableUsers, setAvailableUsers] = useState([]);
+  const [showDeleteMemberModal, setShowDeleteMemberModal] = useState(false);
+  const [deleteMemberGroupId, setDeleteMemberGroupId] = useState(null);
+  const [deleteMemberId, setDeleteMemberId] = useState(null);
 
   const fetchGroups = async () => {
     try {
@@ -187,8 +190,68 @@ const GroupManagement = () => {
     }
   };
 
+  const handleDeleteMember = (groupId, memberId) => {
+    setDeleteMemberGroupId(groupId);
+    setDeleteMemberId(memberId);
+    setShowDeleteMemberModal(true);
+  };
+
+  const handleDeleteMemberConfirm = async () => {
+    setShowDeleteMemberModal(false);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/hq/delete-member/${deleteMemberGroupId}/${deleteMemberId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      fetchGroups();
+      toast.success('Member removed successfully!');
+    } catch (error) {
+      setError(error.message);
+      toast.error('Failed to remove member', {
+        description: error.message,
+      });
+      console.error("Failed to remove member:", error);
+    }
+    setDeleteMemberGroupId(null);
+    setDeleteMemberId(null);
+  };
+
+  const handleDeleteMemberCancel = () => {
+    setShowDeleteMemberModal(false);
+    setDeleteMemberGroupId(null);
+    setDeleteMemberId(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 relative">
+      {/* Delete Member Confirmation Modal */}
+      {showDeleteMemberModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
+          <div className="relative bg-gray-800 rounded-xl shadow-2xl p-8 min-w-[320px] flex flex-col items-center z-10">
+            <span className="text-white text-lg mb-4">Are you sure you want to remove this member from the group?</span>
+            <div className="flex gap-4">
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                onClick={handleDeleteMemberConfirm}
+              >
+                Yes
+              </button>
+              <button
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                onClick={handleDeleteMemberCancel}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header Section */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-6">
@@ -326,12 +389,6 @@ const GroupManagement = () => {
                               <FiPlus className="w-4 h-4 mr-1"/> Add
                             </button>
                             <button 
-                              onClick={() => handleEditGroup(index)} 
-                              className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 hover:text-yellow-300 px-3 py-2 rounded-lg transition-all duration-200 inline-flex items-center text-sm font-medium"
-                            >
-                              <FiEdit className="w-4 h-4 mr-1"/> Edit
-                            </button>
-                            <button 
                               onClick={() => handleDeleteGroup(index)} 
                               className="bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-all duration-200 inline-flex items-center text-sm font-medium"
                             >
@@ -353,7 +410,7 @@ const GroupManagement = () => {
                                 Group Details
                               </h4>
                               {memberCount > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                                   {group.members.map((member) => (
                                     <div key={member._id || member.id || member.username} className="bg-gray-700/50 rounded-lg p-3 flex items-center">
                                       <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mr-3">
@@ -365,6 +422,12 @@ const GroupManagement = () => {
                                         <div className="text-white font-medium">{member.username || 'N/A'}</div>
                                         <div className="text-gray-400 text-sm">{member.email || 'No email'}</div>
                                       </div>
+                                      <button 
+                              className="bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-all duration-200 inline-flex items-center text-sm font-medium ml-auto"
+                              onClick={() => handleDeleteMember(group._id, member._id)}
+                            >
+                              <FiTrash2 className="w-4 h-4 mr-1"/>
+                            </button>
                                     </div>
                                   ))}
                                 </div>
@@ -389,6 +452,7 @@ const GroupManagement = () => {
                     </React.Fragment>
                   );
                 })}
+              </tbody>
             </table>
           </div>
         )}
